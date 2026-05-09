@@ -1,0 +1,7 @@
+{
+  "name": "mdt-foundation-world-control",
+  "author": "monthzifang",
+  "main": "com.mdt.foundation.FoundationWorldControlPlugin",
+  "description": "A dependency plugin that exposes universal world control actions for Mindustry servers, including spawning, unit buffs, team changes, core item control, and forced game outcome control.",
+  "version": "V1.0.0 - 157X"
+}
