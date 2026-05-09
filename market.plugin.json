@@ -10,8 +10,11 @@
   "requiredMarketVersion": "v1",
   "channel": "modded",
   "targets": ["mdt", "mdtx"],
-  "downloadUrls": [],
+  "downloadUrls": [
+    "https://raw.githubusercontent.com/MonthZifang/mdt-foundation-world-control/main/dist/mdt-foundation-world-control.jar",
+    "https://raw.githubusercontent.com/MonthZifang/mdt-foundation-world-control/main/plugin.json"
+  ],
   "dependencies": [],
-  "repositoryUrl": "",
+  "repositoryUrl": "https://github.com/MonthZifang/mdt-foundation-world-control",
   "entry": "com.mdt.foundation.FoundationWorldControlPlugin"
 }
