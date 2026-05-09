@@ -2,14 +2,17 @@
   "metadataVersion": 1,
   "name": "mdt-foundation-world-control",
   "displayName": "mdt Foundation World Control",
-  "displayNameZh": "MDT 基垫物世界控制插件",
+  "displayNameZh": "MDT ????????",
   "author": "monthzifang",
   "description": "Universal dependency plugin for Mindustry world control through Java API or HTTP API.",
-  "descriptionZh": "一个可被其他插件或外部服务调用的 Mindustry 世界控制依赖插件，支持生成单位和建筑、修改队伍、控制 Buff、调节核心物资以及强制结束对局。",
-  "version": "v1",
+  "descriptionZh": "???????????????? Mindustry ?????????????????????????? Buff????????????????",
+  "version": "V1.2.0 - 157X - 2026x5-9",
   "requiredMarketVersion": "v1",
   "channel": "modded",
-  "targets": ["mdt", "mdtx"],
+  "targets": [
+    "mdt",
+    "mdtx"
+  ],
   "downloadUrls": [
     "https://raw.githubusercontent.com/MonthZifang/mdt-foundation-world-control/main/dist/mdt-foundation-world-control.jar",
     "https://raw.githubusercontent.com/MonthZifang/mdt-foundation-world-control/main/plugin.json"

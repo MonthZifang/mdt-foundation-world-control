@@ -9,6 +9,7 @@ import com.mdt.foundation.api.FoundationWorldControlApi;
 import com.mdt.foundation.config.PluginConfiguration;
 import com.mdt.foundation.http.HttpApiServer;
 import com.mdt.foundation.service.WorldControlService;
+import java.net.BindException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
@@ -25,6 +26,7 @@ public final class FoundationWorldControlPlugin extends Plugin {
     private PluginConfiguration configuration;
     private WorldControlService service;
     private HttpApiServer httpApiServer;
+    private boolean apiRunning;
 
     public static FoundationWorldControlApi getApi() {
         return api;
@@ -36,17 +38,27 @@ public final class FoundationWorldControlPlugin extends Plugin {
             configuration = PluginConfiguration.load(DATA_DIRECTORY);
             service = new WorldControlService(configuration);
             api = service;
+            registerSharedServices();
+            apiRunning = false;
 
             if (configuration.isApiEnabled()) {
-                httpApiServer = new HttpApiServer(configuration, service);
-                httpApiServer.start();
-                registerShutdownHook();
-                Events.on(DisposeEvent.class, event -> shutdownHttpApiServer());
+                try {
+                    httpApiServer = new HttpApiServer(configuration, service);
+                    httpApiServer.start();
+                    apiRunning = true;
+                    registerShutdownHook();
+                    Events.on(DisposeEvent.class, event -> shutdownHttpApiServer());
+                } catch (BindException bindException) {
+                    httpApiServer = null;
+                    Log.warn("FoundationWorldControl API port already in use. Running without HTTP API. host=@ port=@",
+                        configuration.getApiHost(), configuration.getApiPort());
+                }
             }
 
             Log.info(
-                "FoundationWorldControl loaded. api=@ host=@ port=@ config=@",
+                "FoundationWorldControl loaded. apiEnabled=@ apiRunning=@ host=@ port=@ config=@",
                 configuration.isApiEnabled(),
+                apiRunning,
                 configuration.getApiHost(),
                 configuration.getApiPort(),
                 configuration.getConfigFile()
@@ -60,8 +72,9 @@ public final class FoundationWorldControlPlugin extends Plugin {
     public void registerServerCommands(CommandHandler handler) {
         handler.register("fwc-status", "Show plugin status.", args -> {
             Log.info(
-                "api=@ host=@ port=@ tokenRequired=@ config=@",
+                "apiEnabled=@ apiRunning=@ host=@ port=@ tokenRequired=@ config=@",
                 configuration.isApiEnabled(),
+                apiRunning,
                 configuration.getApiHost(),
                 configuration.getApiPort(),
                 configuration.isApiRequireToken(),
@@ -89,6 +102,8 @@ public final class FoundationWorldControlPlugin extends Plugin {
             httpApiServer.close();
             httpApiServer = null;
         }
+        apiRunning = false;
+        unregisterSharedServices();
         if (shutdownHook != null) {
             try {
                 Runtime.getRuntime().removeShutdownHook(shutdownHook);
@@ -111,5 +126,33 @@ public final class FoundationWorldControlPlugin extends Plugin {
         }, "mdt-foundation-world-control-shutdown");
         shutdownHook.setDaemon(true);
         Runtime.getRuntime().addShutdownHook(shutdownHook);
+    }
+
+    private void registerSharedServices() {
+        registerSharedService("mdt.foundation.api", api);
+        registerSharedService("com.mdt.foundation.api.FoundationWorldControlApi", api);
+    }
+
+    private void unregisterSharedServices() {
+        unregisterSharedService("mdt.foundation.api");
+        unregisterSharedService("com.mdt.foundation.api.FoundationWorldControlApi");
+    }
+
+    private void registerSharedService(String key, Object service) {
+        try {
+            Class<?> hub = Class.forName("mdt.ServeMdtPlugin");
+            hub.getMethod("registerSharedService", String.class, Object.class).invoke(null, key, service);
+        } catch (Exception ignored) {
+            // Core hub is optional.
+        }
+    }
+
+    private void unregisterSharedService(String key) {
+        try {
+            Class<?> hub = Class.forName("mdt.ServeMdtPlugin");
+            hub.getMethod("unregisterSharedService", String.class).invoke(null, key);
+        } catch (Exception ignored) {
+            // Core hub is optional.
+        }
     }
 }
